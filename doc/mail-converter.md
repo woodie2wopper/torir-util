@@ -1,4 +1,4 @@
-# export-apple-mail AppleMailをテキストファイルとして出力する（ファイル名に日時とタイトルの一部）
+# mail-converter AppleMailをテキストファイルに変換する（ファイル名に日時とタイトルの一部）
 
 ## 機能
 - macOS Mailで選択したメールをAppleScriptで自動的にテキストファイル化し、ファイル名に日時と件名を含めて保存する
@@ -23,7 +23,7 @@
 
 ## 文字コードの変更とファイル名に日付と時間を追加する
 ```
-./bin/export-apple-mail.py -i 保存されたメールのディレクトリ [-o 出力ディレクトリ]
+./bin/mail-converter.py -i 保存されたメールのディレクトリ [-o 出力ディレクトリ]
 ```
 - 出力ディレクトリを指定しない場合、入力ディレクトリ内のexport-mailフォルダに保存されます
 - ファイル名の形式: YYMMDD_HHMMSS_件名.txt
