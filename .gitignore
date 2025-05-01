@@ -1,0 +1,30 @@
+# 中間ファイル
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.class
+*.pyc
+*.pyo
+*.pyd
+*.cache
+*.log
+# OSX
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python cursor
+.hypothesis/
+.pytest_cache/
+__pycache__/
+.specstory/
+.cursorindexingignore
+.cursorignore
+.cursorignore_global
+.cursorignore_project
+.cursorignore_user
+.cursorignore_workspace
