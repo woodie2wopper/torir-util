@@ -1,0 +1,8 @@
+{
+  "name": "No1_NonlinearDynamics_MentalHealth_Intervention",
+  "search_formula_file": "No1_NonlinearDynamics_MentalHealth_Intervention_PatentSearch.txt",
+  "search_result_file": "No1_NonlinearDynamics_MentalHealth_Intervention_PatentSearc.csv",
+  "scoring_keywords_file": "No1_scoring_keywords.json",
+  "output_dir": "../../processed/No1_NonlinearDynamics_MentalHealth_Intervention/",
+  "description": "非線形力学・メンタルヘルス介入に関する特許検索データセット"
+} 

@@ -1,0 +1,58 @@
+{
+  "categories": {
+    "mental_health": {
+      "keywords": [
+        "mental health", "anxiety", "depression", "stress", "well-being",
+        "psychological", "cognitive", "behavioral", "emotional", "mental",
+        "psychiatric", "neurological", "brain", "mind", "consciousness"
+      ],
+      "weight": 1.0,
+      "description": "Mental health related technologies"
+    },
+    "biosensor": {
+      "keywords": [
+        "biosensor", "wearable", "sensor", "monitoring", "biometric",
+        "physiological", "vital signs", "heart rate", "blood pressure",
+        "electrocardiogram", "photoplethysmography", "electroencephalogram",
+        "biometric", "measurement", "detection"
+      ],
+      "weight": 0.8,
+      "description": "Biosensor and wearable technologies"
+    },
+    "intervention": {
+      "keywords": [
+        "intervention", "therapy", "treatment", "modulation", "stimulation",
+        "therapeutic", "rehabilitation", "prevention", "management",
+        "vagus nerve", "nerve stimulation", "electrical", "magnetic",
+        "non-invasive", "invasive", "device", "apparatus"
+      ],
+      "weight": 0.9,
+      "description": "Intervention and therapy methods"
+    },
+    "digital_health": {
+      "keywords": [
+        "digital", "mobile", "app", "software", "algorithm",
+        "artificial intelligence", "machine learning", "data analysis",
+        "computer", "system", "platform", "application", "program",
+        "automated", "intelligent", "smart"
+      ],
+      "weight": 0.7,
+      "description": "Digital health technologies"
+    }
+  },
+  "scoring_settings": {
+    "case_sensitive": false,
+    "partial_match": true,
+    "exact_match_bonus": 1.2,
+    "title_weight": 1.5,
+    "abstract_weight": 1.0,
+    "min_score_threshold": 10.0,
+    "max_keywords_per_category": 50
+  },
+  "language_support": {
+    "english": true,
+    "japanese": false,
+    "chinese": false,
+    "korean": false
+  }
+}

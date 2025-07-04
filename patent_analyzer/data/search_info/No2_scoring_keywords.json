@@ -1,0 +1,69 @@
+{
+  "scoring_name": "No2_BrainNetwork_Compulsion_AIIntervention_Scoring",
+  "scoring_categories": [
+    {
+      "name": "脳ネットワーク/アトラクター/神経活動 (高得点)",
+      "score": 15,
+      "keywords": [
+        "brain network",
+        "neural network",
+        "DMN",
+        "default mode network",
+        "attractor",
+        "fixed point behavior",
+        "脳ネットワーク",
+        "神経活動"
+      ]
+    },
+    {
+      "name": "執着/固着行動 (中高得点)",
+      "score": 10,
+      "keywords": [
+        "compulsion",
+        "obsession",
+        "craving",
+        "rumination",
+        "addiction",
+        "執着",
+        "反芻"
+      ]
+    },
+    {
+      "name": "AI/機械学習による分析 (中高得点)",
+      "score": 10,
+      "keywords": [
+        "machine learning",
+        "deep learning",
+        "AI",
+        "artificial intelligence",
+        "データ分析"
+      ]
+    },
+    {
+      "name": "情報/行動制御・変容 (中得点)",
+      "score": 7,
+      "keywords": [
+        "information control",
+        "behavioral modification",
+        "intervention",
+        "regulation",
+        "情報制御",
+        "行動変容"
+      ]
+    },
+    {
+      "name": "生理指標/データ融合 (中得点)",
+      "score": 5,
+      "keywords": [
+        "biosensor",
+        "wearable",
+        "digital phenotyping",
+        "hrv",
+        "eda",
+        "eeg",
+        "fnirs",
+        "voice analysis"
+      ]
+    }
+  ]
+}

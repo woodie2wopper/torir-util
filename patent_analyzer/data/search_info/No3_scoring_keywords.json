@@ -1,0 +1,62 @@
+{
+  "scoring_name": "No3_PotentialWell_Physiology_PsychModeling_Scoring",
+  "scoring_categories": [
+    {
+      "name": "井戸型ポテンシャル/エネルギーランドスケープ (高得点)",
+      "score": 15,
+      "keywords": [
+        "potential well",
+        "energy landscape",
+        "井戸型ポテンシャル"
+      ]
+    },
+    {
+      "name": "生理応答/自律神経系 (中高得点)",
+      "score": 10,
+      "keywords": [
+        "physiological response",
+        "autonomic nervous system",
+        "HRV",
+        "EDA",
+        "生体応答",
+        "自律神経"
+      ]
+    },
+    {
+      "name": "モデル化/定量化/予測 (中高得点)",
+      "score": 10,
+      "keywords": [
+        "modeling",
+        "quantification",
+        "prediction",
+        "モデル化",
+        "定量化",
+        "予測"
+      ]
+    },
+    {
+      "name": "精神状態/心理障害 (中得点)",
+      "score": 7,
+      "keywords": [
+        "psychological disorder",
+        "emotional state",
+        "mental health",
+        "anxiety",
+        "stress",
+        "精神状態",
+        "心の健康"
+      ]
+    },
+    {
+      "name": "非線形/アトラクター関連 (中得点)",
+      "score": 5,
+      "keywords": [
+        "nonlinear dynamics",
+        "attractor",
+        "complex system",
+        "非線形ダイナミクス",
+        "アトラクター"
+      ]
+    }
+  ]
+}

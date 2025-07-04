@@ -69,6 +69,7 @@ patent_analyzer/data/raw_search_results/*.csv
 !patent_analyzer/data/raw_search_results/example_*.csv
 
 # Patent Analyzer - 取得したアブストラクトファイル
-patent_analyzer/data/abstracts/*.json
-patent_analyzer/data/abstracts/*.txt
-patent_analyzer/data/abstracts/*.html
+patent_analyzer/data/abstracts/
+
+patent_analyzer/test_data/
+processed/

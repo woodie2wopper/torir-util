@@ -24,7 +24,7 @@ from relevance_scorer import RelevanceScorer
 class PatentOrchestrator:
     """特許分析システム全体のオーケストレーター"""
     
-    def __init__(self, config_file: Optional[str] = None, test_mode: bool = False, mock_abstracts_file: Optional[str] = None, **kwargs):
+    def __init__(self, config_file: Optional[str] = None, test_mode: bool = False, mock_abstracts_file: Optional[str] = None, scoring_keywords_file: Optional[str] = None, **kwargs):
         """
         PatentOrchestratorの初期化
         
@@ -32,10 +32,12 @@ class PatentOrchestrator:
             config_file: 設定ファイルパス
             test_mode: テストモードフラグ
             mock_abstracts_file: モックアブストラクトファイルパス（テストモード時）
+            scoring_keywords_file: スコアリングキーワードファイルパス
             **kwargs: 追加の設定オプション
         """
         self.test_mode = test_mode
         self.mock_abstracts_file = mock_abstracts_file
+        self.scoring_keywords_file = scoring_keywords_file
         self.config = self._load_config(config_file, **kwargs)
         self.logger = self._setup_logging()
         self.results = {
@@ -575,7 +577,8 @@ class PatentOrchestrator:
                 raise FileNotFoundError(f"Integrated patents file not found: {input_file}")
             
             # Relevance Scorerの実行
-            scorer = RelevanceScorer(self.config["components"]["relevance_scorer"]["keywords_file"])
+            keywords_file = self.scoring_keywords_file or self.config["components"]["relevance_scorer"]["keywords_file"]
+            scorer = RelevanceScorer(keywords_file)
             
             with open(input_file, 'r', encoding='utf-8') as f:
                 patent_data = json.load(f)
@@ -771,6 +774,7 @@ def main():
     parser.add_argument("--batch_size", type=int, default=None, help="Batch size for batch processing")
     parser.add_argument("--skip_abstract_fetch", action="store_true", help="Skip abstract fetching and proceed with empty abstracts")
     parser.add_argument("--sort-scored-file", type=str, help="Create sorted version of existing scored patents file")
+    parser.add_argument("--scoring-keywords", type=str, help="Scoring keywords JSON file (evaluation keywords)")
     
     args = parser.parse_args()
     
@@ -790,6 +794,7 @@ def main():
         args.config, 
         test_mode=args.test_mode,
         mock_abstracts_file=args.mock_abstracts,
+        scoring_keywords_file=args.scoring_keywords,
         **config_overrides
     )
     # PatentDataFetcher用のバッチ処理パラメータをorchestratorにセット

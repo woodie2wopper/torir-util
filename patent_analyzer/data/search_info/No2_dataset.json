@@ -1,0 +1,8 @@
+{
+  "name": "No2_BrainNetwork_Compulsion_AIIntervention",
+  "search_formula_file": "No2_BrainNetwork_Compulsion_AIIntervention_PatentSearch.txt",
+  "search_result_file": "No2_BrainNetwork_Compulsion_AIIntervention_PatentSearch.csv",
+  "scoring_keywords_file": "No2_scoring_keywords.json",
+  "output_dir": "../../processed/No2_BrainNetwork_Compulsion_AIIntervention/",
+  "description": "脳ネットワーク・強迫・AI介入に関する特許検索データセット"
+} 

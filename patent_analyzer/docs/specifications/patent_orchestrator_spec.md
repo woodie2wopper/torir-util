@@ -496,3 +496,100 @@ python src/patent_orchestrator.py --input data.csv --skip_abstract_fetch
 - 分散処理対応
 - クラウド統合
 - API エンドポイント提供 
+
+---
+
+## PatentInsight Orchestrator 最新仕様書（/search_info対応版）
+
+### 1. ディレクトリ構成
+
+```
+patent_analyzer/
+├── data/
+│   ├── search_info/                # ← ここに全ての検索・評価情報を集約
+│   │   ├── No1_NonlinearDynamics_MentalHealth_Intervention_PatentSearch.txt   # 検索式
+│   │   ├── No1_NonlinearDynamics_MentalHealth_Intervention_PatentSearch.csv   # 検索結果
+│   │   ├── No1_scoring_keywords.json                                          # スコアリング用キーワード（評価キーワード）
+│   │   ├── No1_dataset.json                                                   # データセット定義（後述）
+│   │   ├── No2_...                                                            # No2, No3も同様
+│   └── processed/                  # 処理済みデータ（出力先）
+├── src/                            # Pythonソースコード
+│   └── ...                         # 各種スクリプト
+├── config/                         # （グローバルな設定があれば）
+├── logs/                           # ログ
+└── README.md                       # ドキュメント
+```
+
+---
+
+### 2. ファイルの役割
+
+- `NoX_...PatentSearch.txt` … Google Patentsで使った検索式（人手で作成）
+- `NoX_...PatentSearch.csv` … 検索結果CSV（ダウンロード）
+- `NoX_scoring_keywords.json` … スコアリング用キーワード（評価キーワード、ユーザーが用意）
+- `NoX_dataset.json` … データセット定義（下記仕様）
+
+---
+
+### 3. データセット定義JSON（NoX_dataset.json）仕様
+
+```json
+{
+  "name": "No1_NonlinearDynamics_MentalHealth_Intervention",
+  "search_formula_file": "No1_NonlinearDynamics_MentalHealth_Intervention_PatentSearch.txt",
+  "search_result_file": "No1_NonlinearDynamics_MentalHealth_Intervention_PatentSearch.csv",
+  "scoring_keywords_file": "No1_scoring_keywords.json",
+  "output_dir": "../../processed/No1_NonlinearDynamics_MentalHealth_Intervention/",
+  "description": "非線形力学・メンタルヘルス介入に関する特許検索データセット"
+}
+```
+
+- `search_formula_file` … 検索式（txt）
+- `search_result_file` … 検索結果CSV
+- `scoring_keywords_file` … スコアリング用キーワードJSON
+- `output_dir` … 出力先ディレクトリ（なければ自動生成）
+- `description` … 任意の説明
+
+---
+
+### 4. ワークフロー
+
+1. `/search_info`配下に`.txt`, `.csv`, `scoring_keywords.json`, `NoX_dataset.json`を配置
+2. `NoX_dataset.json`を指定してパーサを実行
+3. パーサがコマンドを生成し、orchestrator等のワークフローを自動実行
+
+---
+
+### 5. dataset.jsonパーサ仕様
+
+- 指定した`NoX_dataset.json`を読み込み、必要なファイルパス・出力先を取得
+- それに基づき、orchestrator等のコマンドライン引数を自動生成
+  - 例:
+    ```
+    python3 src/patent_orchestrator.py \
+      --input data/search_info/No1_NonlinearDynamics_MentalHealth_Intervention_PatentSearch.csv \
+      --output data/processed/No1_NonlinearDynamics_MentalHealth_Intervention/ \
+      --scoring-keywords data/search_info/No1_scoring_keywords.json
+    ```
+- 必須項目が存在しない場合はエラー
+- 複数データセットの一括処理にも拡張可能な設計
+
+---
+
+### 6. 拡張性
+
+- 評価キーワード以外の追加情報（例：メタデータ、タグ、担当者など）も`NoX_dataset.json`に追加可能
+- 複数データセットをまとめた「プロジェクト定義JSON」も容易に拡張可能
+
+---
+
+### 7. 備考
+
+- 旧`raw_search_results`ディレクトリは廃止し、`search_info`に統一
+- 検索キーワードJSONの自動生成は行わない
+- スコアリングキーワード（評価キーワード）はユーザーが用意し、`search_info`に格納
+
+---
+
+この内容で最新版仕様書となります。  
+ご要望・修正点があればご指示ください。 

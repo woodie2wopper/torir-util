@@ -1,0 +1,8 @@
+{
+  "name": "No3_PotentialWell_Physiology_PsychModeling",
+  "search_formula_file": "No3_PotentialWell_Physiology_PsychModeling_PatentSearch.txt",
+  "search_result_file": "No3_PotentialWell_Physiology_PsychModeling_PatentSearch.csv",
+  "scoring_keywords_file": "No3_scoring_keywords.json",
+  "output_dir": "../../processed/No3_PotentialWell_Physiology_PsychModeling/",
+  "description": "ポテンシャル井戸・生理・心理モデリングに関する特許検索データセット"
+} 
