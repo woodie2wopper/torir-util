@@ -1,0 +1,25 @@
+{
+  "execution_summary": {
+    "start_time": "2025-07-04T17:36:29.186285",
+    "end_time": "2025-07-04T17:36:29.187617",
+    "total_duration": "0:00:00.001332",
+    "status": "completed"
+  },
+  "component_results": {
+    "patent_data_fetcher": {
+      "status": "failed",
+      "error": "Expecting value: line 1 column 1 (char 0)"
+    },
+    "abstract_integrator": {
+      "status": "failed",
+      "error": "Abstracts file not found: data/abstracts.json"
+    },
+    "relevance_scorer": {
+      "status": "failed",
+      "error": "Abstract Integrator must complete successfully before Relevance Scorer"
+    }
+  },
+  "final_results": {},
+  "error_log": [],
+  "warnings": []
+}

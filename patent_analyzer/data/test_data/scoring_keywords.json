@@ -1,0 +1,38 @@
+{
+  "high_relevance": [
+    "vagus nerve",
+    "brain network",
+    "digital phenotyping",
+    "biosensor",
+    "stress monitoring",
+    "mental health",
+    "neural stimulation",
+    "physiological monitoring",
+    "wearable device",
+    "biomarker"
+  ],
+  "medium_relevance": [
+    "neurotechnology",
+    "health monitoring",
+    "intervention",
+    "personalized",
+    "real-time",
+    "feedback",
+    "analysis",
+    "assessment",
+    "treatment",
+    "therapy"
+  ],
+  "low_relevance": [
+    "device",
+    "system",
+    "method",
+    "apparatus",
+    "technology",
+    "innovation",
+    "improvement",
+    "enhancement",
+    "optimization",
+    "efficiency"
+  ]
+} 

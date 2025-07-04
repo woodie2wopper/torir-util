@@ -1,0 +1,22 @@
+{
+  "US-9254383-B2": {
+    "title": "Devices and methods for monitoring non-invasive vagus nerve stimulation",
+    "abstract": "A system for monitoring non-invasive vagus nerve stimulation includes a device that applies electrical stimulation to the vagus nerve and monitors physiological responses. The system uses biosensors to detect changes in heart rate variability, skin conductance, and other biomarkers to assess the effectiveness of the stimulation and provide feedback for personalized treatment.",
+    "url": "https://patents.google.com/patent/US9254383B2/en"
+  },
+  "US-10123456-A1": {
+    "title": "System for brain network analysis and intervention",
+    "abstract": "A comprehensive system for analyzing brain network dynamics and providing targeted interventions. The system uses advanced imaging techniques to map default mode network activity and identify attractor states in nonlinear brain dynamics. It provides personalized interventions based on individual brain network patterns.",
+    "url": "https://patents.google.com/patent/US10123456A1/en"
+  },
+  "US-98765432-B2": {
+    "title": "Digital phenotyping methods for mental health assessment",
+    "abstract": "Methods and systems for digital phenotyping to assess mental health conditions including anxiety, depression, and stress. The system analyzes smartphone usage patterns, app interactions, screen time, and information consumption patterns to create digital biomarkers for mental health monitoring and early intervention.",
+    "url": "https://patents.google.com/patent/US98765432B2/en"
+  },
+  "US-11223344-A1": {
+    "title": "Wearable biosensor for stress monitoring and intervention",
+    "abstract": "A wearable biosensor system that continuously monitors stress levels through multiple physiological parameters including heart rate variability, electrodermal activity, and movement patterns. The system provides real-time feedback and personalized interventions to help users manage stress and improve well-being.",
+    "url": "https://patents.google.com/patent/US11223344A1/en"
+  }
+} 

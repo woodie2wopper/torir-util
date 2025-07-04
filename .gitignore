@@ -28,3 +28,42 @@ __pycache__/
 .cursorignore_project
 .cursorignore_user
 .cursorignore_workspace
+# Pythonの中間ファイル
+*.py[cod]
+__pycache__/
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.eggs/
+__init__.py
+
+# Patent Analyzer - 結果ファイル（処理済みデータ）
+patent_analyzer/data/processed/*.json
+patent_analyzer/data/processed/*.csv
+patent_analyzer/data/processed/*.log
+
+# Patent Analyzer - ログファイル
+patent_analyzer/logs/*.log
+
+# Patent Analyzer - テスト出力
+patent_analyzer/test_output/
+patent_analyzer/test/temp/
+patent_analyzer/test_output/temp/
+
+# Patent Analyzer - 一時ファイル
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Patent Analyzer - 設定ファイル（機密情報を含む可能性）
+patent_analyzer/config/*.json
+!patent_analyzer/config/example_*.json
+
+# Patent Analyzer - 出力ディレクトリ
+patent_analyzer/output/
+
+# Patent Analyzer - 本番データ（機密性の高いもの）
+patent_analyzer/data/raw_search_results/*.csv
+!patent_analyzer/data/raw_search_results/example_*.csv

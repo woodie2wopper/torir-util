@@ -1,0 +1,13 @@
+# PatentInsight Orchestrator dependencies
+# Python dependencies for patent analysis system
+
+# Core dependencies
+requests>=2.25.1
+beautifulsoup4>=4.9.3
+
+# Data processing (optional, for CSV to JSON conversion)
+pandas>=1.3.0
+
+# JSON processing utilities
+# Note: jq is recommended for command-line JSON processing
+# Install via: brew install jq (macOS) or apt-get install jq (Ubuntu) 

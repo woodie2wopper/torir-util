@@ -1,0 +1,3 @@
+# Mail Converter Dependencies
+# No external Python packages required for basic functionality
+# AppleScript and macOS built-in tools are used 

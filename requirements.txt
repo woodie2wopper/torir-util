@@ -1,3 +1,7 @@
+# Python dependencies
+requests>=2.25.1
+beautifulsoup4>=4.9.3
+
 # このスクリプトはnkfコマンドを使用します
 # macOSでは以下のコマンドでインストールしてください：
 # brew install nkf 
