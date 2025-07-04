@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 RelevanceScorer: アブストラクトが統合された特許データに対し、キーワードベースの関連性スコアを計算する
 """
@@ -36,18 +37,26 @@ class RelevanceScorer:
             raise
     
     def calculate_relevance_scores(self, patent_data: List[Dict]) -> List[Dict]:
-        """関連性スコアを計算"""
+        """
+        関連性スコアを計算
+        """
+        import math
         self.logger.info(f"Calculating relevance scores for {len(patent_data)} patents")
         
         scored_data = []
         for patent in patent_data:
-            score = self._calculate_patent_score(patent)
+            # abstractが空またはNoneの場合はNaN
+            abstract = patent.get("abstract", None)
+            if abstract is None or (isinstance(abstract, str) and not abstract.strip()):
+                score = float('nan')
+            else:
+                score = self._calculate_patent_score(patent)
             scored_patent = patent.copy()
             scored_patent["relevance_score"] = score
             scored_data.append(scored_patent)
         
-        # スコア降順でソート
-        scored_data.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
+        # スコア降順でソート（NaNは一番下）
+        scored_data.sort(key=lambda x: (not isinstance(x.get("relevance_score"), float) or not math.isnan(x.get("relevance_score"))), reverse=True)
         
         self.logger.info(f"Relevance scoring completed for {len(scored_data)} patents")
         return scored_data
@@ -64,11 +73,12 @@ class RelevanceScorer:
         total_score = 0
         matched_keywords = []
         
-        # 各カテゴリのキーワードをチェック
-        for category in self.keywords_config.get("keyword_categories", []):
-            category_name = category.get("name", "Unknown")
-            category_score = category.get("score", 0)
-            keywords = category.get("keywords", [])
+        # 新しい設定ファイル構造に対応
+        categories = self.keywords_config.get("categories", {})
+        
+        for category_name, category_config in categories.items():
+            keywords = category_config.get("keywords", [])
+            weight = category_config.get("weight", 1.0)
             
             category_matches = 0
             for keyword in keywords:
@@ -80,8 +90,8 @@ class RelevanceScorer:
                     category_matches += 1
                     matched_keywords.append(f"{keyword} ({category_name})")
             
-            # カテゴリのスコアを加算（同一キーワードの複数出現は1回としてカウント）
-            category_total = category_matches * category_score
+            # カテゴリのスコアを加算（重みを適用）
+            category_total = category_matches * weight * 10  # 重みを10倍して整数スコアに
             total_score += category_total
             
             if category_matches > 0:
@@ -90,7 +100,7 @@ class RelevanceScorer:
         if matched_keywords:
             self.logger.debug(f"Patent {patent.get('id', 'Unknown')}: matched keywords: {', '.join(matched_keywords)}")
         
-        return total_score
+        return int(total_score)
     
     def get_score_statistics(self, scored_data: List[Dict]) -> Dict:
         """スコア統計情報を取得"""

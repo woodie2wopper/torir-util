@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Google Patents scraper to extract title and abstract from patent URLs.
 Supports both command-line arguments and pipe input.
@@ -96,6 +97,11 @@ def main():
             continue
             
         result = scrape_patent_info(url)
+        # 成功/失敗の判定と表示
+        if result.get("Abstract") and not result["Abstract"].startswith("Error") and result.get("Title") and not result["Title"].startswith("Error"):
+            print(f"[SUCCESS] {result.get('ID') or url}", file=sys.stderr)
+        else:
+            print(f"[FAIL] {result.get('ID') or url} - {result.get('Title')} / {result.get('Abstract')}", file=sys.stderr)
         results.append(result)
     
     if len(results) == 1:

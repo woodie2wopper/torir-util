@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Abstract Integrator - CSV特許データとJSONアブストラクトデータを統合するコンポーネント
 
@@ -93,53 +94,87 @@ class AbstractIntegrator:
             self.logger.error(f"CSV to JSON conversion error: {e}")
             return False
     
-    def integrate_abstracts(self, patents_file: str, abstracts_file: str, 
+    def integrate_abstracts(self, patents_file: str, abstracts_dir: str, 
                           output_file: str) -> bool:
         """
-        特許データとアブストラクトデータを統合
+        特許データと個別アブストラクトファイルを統合
         
         Args:
             patents_file: 特許データJSONファイルパス
-            abstracts_file: アブストラクトデータJSONファイルパス
+            abstracts_dir: アブストラクト個別ファイルディレクトリパス
             output_file: 出力JSONファイルパス
             
         Returns:
             bool: 成功時True、失敗時False
         """
         try:
-            # jqコマンドでデータ統合
-            jq_script = '''
-            .[0] as $patents | .[1] as $abstracts | 
-            $patents | map(. + {abstract: $abstracts[.id].abstract})
-            '''
+            # 特許データを読み込み
+            with open(patents_file, 'r', encoding='utf-8') as f:
+                patents = json.load(f)
             
-            cmd = ['jq', '-s', jq_script, patents_file, abstracts_file]
+            # 個別アブストラクトファイルを読み込み
+            abstracts_dir_path = Path(abstracts_dir)
+            abstracts = {}
             
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if abstracts_dir_path.exists():
+                for abstract_file in abstracts_dir_path.glob("*.json"):
+                    patent_id = abstract_file.stem
+                    try:
+                        with open(abstract_file, 'r', encoding='utf-8') as f:
+                            abstract_data = json.load(f)
+                        abstracts[patent_id] = abstract_data
+                    except Exception as e:
+                        self.logger.warning(f"Failed to load abstract file {abstract_file}: {e}")
             
-            if result.returncode == 0:
-                # 結果をファイルに保存
-                with open(output_file, 'w', encoding='utf-8') as f:
-                    f.write(result.stdout)
+            # 特許データとアブストラクトを統合
+            integrated_patents = []
+            for patent in patents:
+                patent_id = patent.get("id")
+                integrated_patent = patent.copy()
                 
-                self.logger.info(f"Abstract integration completed: {output_file}")
-                return True
-            else:
-                self.logger.error(f"jq integration failed: {result.stderr}")
-                return False
+                if patent_id in abstracts:
+                    abstract_data = abstracts[patent_id]
+                    integrated_patent.update({
+                        "abstract": abstract_data.get("Abstract"),
+                        "abstract_title": abstract_data.get("Title"),
+                        "abstract_url": abstract_data.get("URL"),
+                        "abstract_error": abstract_data.get("Error"),
+                        "abstract_retry_count": abstract_data.get("RetryCount", 0),
+                        "abstract_source": "integrated_from_file"
+                    })
+                else:
+                    # アブストラクトファイルが存在しない場合
+                    integrated_patent.update({
+                        "abstract": None,
+                        "abstract_title": None,
+                        "abstract_url": None,
+                        "abstract_error": "Abstract file not found",
+                        "abstract_retry_count": 0,
+                        "abstract_source": "not_found"
+                    })
+                
+                integrated_patents.append(integrated_patent)
+            
+            # 結果をファイルに保存
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(integrated_patents, f, indent=2, ensure_ascii=False)
+            
+            self.logger.info(f"Abstract integration completed: {output_file}")
+            self.logger.info(f"Loaded {len(abstracts)} abstract files from {abstracts_dir}")
+            return True
                 
         except Exception as e:
             self.logger.error(f"Abstract integration error: {e}")
             return False
     
-    def process(self, csv_file: str, abstracts_file: str, 
+    def process(self, csv_file: str, abstracts_dir: str, 
                output_file: str) -> Dict:
         """
         メイン処理：CSV変換とアブストラクト統合を実行
         
         Args:
             csv_file: 入力CSVファイルパス
-            abstracts_file: アブストラクトデータJSONファイルパス
+            abstracts_dir: アブストラクト個別ファイルディレクトリパス
             output_file: 最終出力JSONファイルパス
             
         Returns:
@@ -171,8 +206,8 @@ class AbstractIntegrator:
                 return result
             
             # ステップ2: アブストラクト統合
-            self.logger.info(f"Starting abstract integration: {abstracts_file}")
-            if not self.integrate_abstracts(temp_json_file, abstracts_file, output_file):
+            self.logger.info(f"Starting abstract integration: {abstracts_dir}")
+            if not self.integrate_abstracts(temp_json_file, abstracts_dir, output_file):
                 result["errors"].append("Abstract integration failed")
                 return result
             

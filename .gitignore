@@ -67,3 +67,8 @@ patent_analyzer/output/
 # Patent Analyzer - 本番データ（機密性の高いもの）
 patent_analyzer/data/raw_search_results/*.csv
 !patent_analyzer/data/raw_search_results/example_*.csv
+
+# Patent Analyzer - 取得したアブストラクトファイル
+patent_analyzer/data/abstracts/*.json
+patent_analyzer/data/abstracts/*.txt
+patent_analyzer/data/abstracts/*.html

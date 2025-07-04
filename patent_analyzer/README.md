@@ -6,6 +6,12 @@
 
 PatentInsight Orchestratorは、Google Patentsの検索結果をCSV形式で受け取り、各特許のアブストラクトを自動取得し、設定可能なキーワードに基づく関連性スコアリングを行い、優先順位付けされた特許リストを生成します。
 
+### 新機能（v1.1）
+- **スコア順ソート機能**: 関連度スコア順（降順）でソートされたファイルを自動生成
+- **バッチ処理機能**: 大量データの分割処理に対応
+- **高速処理モード**: アブストラクト取得をスキップして高速処理
+- **既存ファイルソート**: 既存のスコアリング結果ファイルからソート済みファイルを生成
+
 ## システム構成
 
 ### 動作関係図
@@ -111,6 +117,39 @@ python3 patent_analyzer/src/patent_orchestrator.py \
   --input patent_analyzer/data/raw_search_results/your_search_results.csv
 ```
 
+### 新機能：スコア順ソート
+
+```bash
+# 既存のスコアリング結果ファイルからソート済みファイルを生成
+python3 patent_analyzer/src/patent_orchestrator.py \
+  --sort-scored-file patent_analyzer/data/processed/scored_patents_20250704_185141.json
+
+# 出力: patent_analyzer/data/processed/scored_patents_20250704_185141_sorted.json
+```
+
+### バッチ処理（大量データ対応）
+
+```bash
+# 1番目から10件の特許のみ処理
+python3 patent_analyzer/src/patent_orchestrator.py \
+  --input patent_analyzer/data/raw_search_results/your_search_results.csv \
+  --start_number 1 --batch_size 10
+
+# 11番目から20件の特許のみ処理
+python3 patent_analyzer/src/patent_orchestrator.py \
+  --input patent_analyzer/data/raw_search_results/your_search_results.csv \
+  --start_number 11 --batch_size 10
+```
+
+### 高速処理モード
+
+```bash
+# アブストラクト取得をスキップして高速処理
+python3 patent_analyzer/src/patent_orchestrator.py \
+  --input patent_analyzer/data/raw_search_results/your_search_results.csv \
+  --skip_abstract_fetch
+```
+
 ### 個別コンポーネントのテスト
 
 ```bash
@@ -191,11 +230,17 @@ US-9254383-B2,Devices and methods for monitoring non-invasive vagus nerve stimul
 ## 出力ファイル
 
 ### 1. スコア付き特許データ
-- ファイル名: `patent_analyzer/data/processed/scored_patents_YYYYMMDD_HHMMSS.json`
-- 形式: JSON配列（スコア降順でソート）
+- **元の順序**: `patent_analyzer/data/processed/scored_patents_YYYYMMDD_HHMMSS.json`
+- **スコア順ソート**: `patent_analyzer/data/processed/scored_patents_YYYYMMDD_HHMMSS_sorted.json`
+- 形式: JSON配列（関連度スコア降順でソート、NaNスコアは除外）
 
-### 2. ログファイル
+### 2. 実行結果サマリー
+- ファイル名: `patent_analyzer/data/processed/orchestrator_results_YYYYMMDD_HHMMSS.json`
+- 形式: JSON（実行統計、エラー情報、上位特許リスト）
+
+### 3. ログファイル
 - 分析ログ: `patent_analyzer/logs/orchestrator_YYYY-MM-DD.log`
+- 特許データ取得ログ: `patent_analyzer/logs/patent_data_fetcher_YYYY-MM-DD.log`
 
 ## 設定ファイル
 

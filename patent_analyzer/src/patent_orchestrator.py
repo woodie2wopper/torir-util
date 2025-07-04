@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Patent Orchestrator - 特許分析システム全体を統合し、ワークフローを管理するメインコンポーネント
 
@@ -13,6 +14,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
+import math
 
 # ローカルモジュールのインポート
 from patent_data_fetcher import PatentDataFetcher
@@ -390,14 +392,27 @@ class PatentOrchestrator:
             if not Path(json_file).exists():
                 raise FileNotFoundError(f"Converted JSON file not found: {json_file}")
             
-            if self.test_mode and self.mock_abstracts_file:
-                # テストモード: モックアブストラクト取得を使用
+            # 追加: skip_abstract_fetch オプション対応
+            if getattr(self, 'skip_abstract_fetch', False):
+                self.logger.info("Skipping abstract fetching as per --skip_abstract_fetch option")
+                # JSONファイルの特許データを読み込み、abstract等を空で埋める
+                with open(json_file, 'r', encoding='utf-8') as f:
+                    patent_data = json.load(f)
+                for p in patent_data:
+                    p["abstract"] = None
+                    p["abstract_title"] = None
+                    p["abstract_url"] = None
+                    p["abstract_error"] = "Skipped by --skip_abstract_fetch"
+                    p["abstract_retry_count"] = 0
+                    p["abstract_source"] = "skipped"
+            elif self.test_mode and self.mock_abstracts_file:
                 self.logger.info("Using mock abstract fetching for test mode")
                 patent_data = self._fetch_abstracts_with_mock(json_file)
             else:
-                # 本番モード: 実際のPatent Data Fetcherを使用
-                fetcher = PatentDataFetcher(json_file)
-                patent_data = fetcher.extract_patent_data()
+                fetcher = PatentDataFetcher(json_file, abstracts_dir="data/abstracts")
+                start_number = getattr(self, 'start_number', 1)
+                batch_size = getattr(self, 'batch_size', None)
+                patent_data = fetcher.extract_patent_data(start_number=start_number, batch_size=batch_size)
             
             # 結果の保存
             output_file = self._get_timestamped_filename("patents_with_abstracts")
@@ -503,22 +518,20 @@ class PatentOrchestrator:
         try:
             # 入力ファイルの確認
             csv_file = self.config["input"]["csv_file"]
-            if self.test_mode and self.mock_abstracts_file:
-                abstracts_file = self.mock_abstracts_file
-            else:
-                abstracts_file = "data/test_data/sample_abstracts.json"  # デフォルトのテストデータ
+            abstracts_dir = "data/abstracts"  # 個別ファイル管理のディレクトリ
             
             if not Path(csv_file).exists():
                 raise FileNotFoundError(f"Input CSV file not found: {csv_file}")
-            if not Path(abstracts_file).exists():
-                raise FileNotFoundError(f"Abstracts file not found: {abstracts_file}")
+            if not Path(abstracts_dir).exists():
+                self.logger.warning(f"Abstracts directory not found: {abstracts_dir}, creating...")
+                Path(abstracts_dir).mkdir(parents=True, exist_ok=True)
             
             # Abstract Integratorの実行
             integrator = AbstractIntegrator(self.config["components"]["abstract_integrator"])
             output_file = self._get_timestamped_filename("integrated_patents")
             output_path = Path(self.config["output"]["base_dir"]) / output_file
             
-            result = integrator.process(csv_file, abstracts_file, str(output_path))
+            result = integrator.process(csv_file, abstracts_dir, str(output_path))
             
             # 結果の記録
             self.results["component_results"]["abstract_integrator"] = {
@@ -569,22 +582,37 @@ class PatentOrchestrator:
             
             scored_data = scorer.calculate_relevance_scores(patent_data)
             
-            # 結果の保存
+            # 結果の保存（元の順序）
             output_file = self._get_timestamped_filename("scored_patents")
             output_path = Path(self.config["output"]["base_dir"]) / output_file
             
             with open(output_path, 'w', encoding='utf-8') as f:
                 json.dump(scored_data, f, indent=2, ensure_ascii=False)
             
+            # スコア順にソートしたデータの作成と保存
+            # NaNスコアを除外してソート
+            valid_scored_data = [p for p in scored_data if not (isinstance(p.get("relevance_score"), float) and math.isnan(p.get("relevance_score")))]
+            sorted_scored_data = sorted(valid_scored_data, key=lambda x: x.get("relevance_score", 0), reverse=True)
+            
+            # ソート済みファイルの保存
+            sorted_output_file = self._get_timestamped_filename("scored_patents_sorted")
+            sorted_output_path = Path(self.config["output"]["base_dir"]) / sorted_output_file
+            
+            with open(sorted_output_path, 'w', encoding='utf-8') as f:
+                json.dump(sorted_scored_data, f, indent=2, ensure_ascii=False)
+            
             # 結果の記録
             self.results["component_results"]["relevance_scorer"] = {
                 "status": "completed",
                 "processed_count": len(scored_data),
                 "scored_count": len(scored_data),
-                "output_file": str(output_path)
+                "valid_scored_count": len(valid_scored_data),
+                "output_file": str(output_path),
+                "sorted_output_file": str(sorted_output_path)
             }
             
             self.logger.info(f"Relevance Scorer completed: {len(scored_data)} patents scored")
+            self.logger.info(f"Sorted output saved to: {sorted_output_path}")
             
         except Exception as e:
             self.logger.error(f"Relevance Scorer failed: {e}")
@@ -598,29 +626,27 @@ class PatentOrchestrator:
     def _generate_final_results(self):
         """最終結果の生成"""
         try:
-            # Relevance Scorerの結果を取得
             scorer_result = self.results["component_results"].get("relevance_scorer", {})
             if scorer_result.get("status") != "completed":
                 return
-            
             output_file = scorer_result["output_file"]
             with open(output_file, 'r', encoding='utf-8') as f:
                 scored_data = json.load(f)
-            
-            # 統計情報の計算
+            # NaNを除外したスコアリスト
+            valid_scored = [p for p in scored_data if not (isinstance(p.get("relevance_score"), float) and math.isnan(p.get("relevance_score")))]
+            nan_count = len(scored_data) - len(valid_scored)
             total_patents = len(scored_data)
-            high_relevance = sum(1 for p in scored_data if p.get("relevance_score", 0) >= 30)
-            medium_relevance = sum(1 for p in scored_data if 10 <= p.get("relevance_score", 0) < 30)
-            low_relevance = sum(1 for p in scored_data if p.get("relevance_score", 0) < 10)
-            
-            # 上位特許の抽出
-            top_patents = sorted(scored_data, key=lambda x: x.get("relevance_score", 0), reverse=True)[:10]
-            
+            high_relevance = sum(1 for p in valid_scored if p.get("relevance_score", 0) >= 30)
+            medium_relevance = sum(1 for p in valid_scored if 10 <= p.get("relevance_score", 0) < 30)
+            low_relevance = sum(1 for p in valid_scored if p.get("relevance_score", 0) < 10)
+            # 上位特許の抽出（NaN除外）
+            top_patents = sorted(valid_scored, key=lambda x: x.get("relevance_score", 0), reverse=True)[:10]
             self.results["final_results"] = {
                 "total_patents": total_patents,
                 "high_relevance_count": high_relevance,
                 "medium_relevance_count": medium_relevance,
                 "low_relevance_count": low_relevance,
+                "nan_score_count": nan_count,
                 "top_patents": [
                     {
                         "patent_id": p.get("id"),
@@ -631,9 +657,7 @@ class PatentOrchestrator:
                     for i, p in enumerate(top_patents)
                 ]
             }
-            
             self.logger.info(f"Final results generated: {total_patents} patents analyzed")
-            
         except Exception as e:
             self.logger.error(f"Failed to generate final results: {e}")
     
@@ -656,6 +680,35 @@ class PatentOrchestrator:
             self.logger.error(f"Failed to save results: {e}")
             raise
     
+    def create_sorted_scored_file(self, input_file: str, output_file: Optional[str] = None) -> str:
+        """既存のスコアリング結果ファイルからスコア順にソートしたファイルを生成"""
+        try:
+            # 入力ファイルの読み込み
+            with open(input_file, 'r', encoding='utf-8') as f:
+                scored_data = json.load(f)
+            
+            # NaNスコアを除外してソート
+            valid_scored_data = [p for p in scored_data if not (isinstance(p.get("relevance_score"), float) and math.isnan(p.get("relevance_score")))]
+            sorted_scored_data = sorted(valid_scored_data, key=lambda x: x.get("relevance_score", 0), reverse=True)
+            
+            # 出力ファイル名の決定
+            if output_file is None:
+                input_path = Path(input_file)
+                output_file = input_path.parent / f"{input_path.stem}_sorted{input_path.suffix}"
+            
+            # ソート済みファイルの保存
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(sorted_scored_data, f, indent=2, ensure_ascii=False)
+            
+            self.logger.info(f"Sorted scored file created: {output_file}")
+            self.logger.info(f"Total patents: {len(scored_data)}, Valid patents: {len(valid_scored_data)}")
+            
+            return str(output_file)
+            
+        except Exception as e:
+            self.logger.error(f"Failed to create sorted scored file: {e}")
+            raise
+    
     def display_summary(self):
         """結果サマリーの表示"""
         summary = self.results["execution_summary"]
@@ -673,6 +726,7 @@ class PatentOrchestrator:
             print(f"High Relevance: {final_results.get('high_relevance_count', 0)}")
             print(f"Medium Relevance: {final_results.get('medium_relevance_count', 0)}")
             print(f"Low Relevance: {final_results.get('low_relevance_count', 0)}")
+            print(f"NaN Score: {final_results.get('nan_score_count', 0)}")
             
             print("\nTop 10 Most Relevant Patents:")
             for patent in final_results.get("top_patents", [])[:10]:
@@ -687,7 +741,7 @@ class PatentOrchestrator:
 def main():
     """コマンドライン実行用のメイン関数"""
     parser = argparse.ArgumentParser(description="PatentInsight Orchestrator")
-    parser.add_argument("--input", "-i", required=True,
+    parser.add_argument("--input", "-i", required=False,
                        help="Input CSV file path")
     parser.add_argument("--config", "-c",
                        help="Configuration file path")
@@ -703,13 +757,19 @@ def main():
                        help="Enable test mode with mock components")
     parser.add_argument("--mock-abstracts", type=str,
                        help="Mock abstracts file path for test mode")
+    parser.add_argument("--existing-abstracts", type=str,
+                       help="Use existing abstracts file instead of fetching new ones")
+    parser.add_argument("--start_number", type=int, default=1, help="Start number for batch processing (1-based index)")
+    parser.add_argument("--batch_size", type=int, default=None, help="Batch size for batch processing")
+    parser.add_argument("--skip_abstract_fetch", action="store_true", help="Skip abstract fetching and proceed with empty abstracts")
+    parser.add_argument("--sort-scored-file", type=str, help="Create sorted version of existing scored patents file")
     
     args = parser.parse_args()
     
     # 設定の準備
-    config_overrides = {
-        "input": {"csv_file": args.input}
-    }
+    config_overrides = {}
+    if args.input:
+        config_overrides["input"] = {"csv_file": args.input}
     
     if args.output:
         config_overrides["output"] = {"base_dir": args.output}
@@ -724,9 +784,18 @@ def main():
         mock_abstracts_file=args.mock_abstracts,
         **config_overrides
     )
+    # PatentDataFetcher用のバッチ処理パラメータをorchestratorにセット
+    orchestrator.start_number = args.start_number
+    orchestrator.batch_size = args.batch_size
+    orchestrator.skip_abstract_fetch = args.skip_abstract_fetch
     
     try:
-        if args.test:
+        if args.sort_scored_file:
+            # 既存のスコアリング結果ファイルをソート
+            output_file = orchestrator.create_sorted_scored_file(args.sort_scored_file)
+            print(f"Sorted file created: {output_file}")
+            sys.exit(0)
+        elif args.test:
             # 個別コンポーネントのテスト
             success = False
             if args.test == "csv-converter":
@@ -743,6 +812,9 @@ def main():
             sys.exit(0 if success else 1)
         else:
             # 通常のワークフロー実行
+            if not args.input:
+                print("Error: --input/-i argument is required for workflow execution")
+                sys.exit(1)
             results = orchestrator.run_workflow()
             orchestrator.save_results()
             orchestrator.display_summary()
