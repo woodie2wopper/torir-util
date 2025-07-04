@@ -652,7 +652,10 @@ class PatentOrchestrator:
                         "patent_id": p.get("id"),
                         "title": p.get("title"),
                         "relevance_score": p.get("relevance_score", 0),
-                        "ranking": i + 1
+                        "ranking": i + 1,
+                        "abstract": p.get("abstract"),
+                        "abstract_title": p.get("abstract_title"),
+                        "abstract_url": p.get("abstract_url")
                     }
                     for i, p in enumerate(top_patents)
                 ]
@@ -732,6 +735,11 @@ class PatentOrchestrator:
             for patent in final_results.get("top_patents", [])[:10]:
                 print(f"{patent['ranking']}. {patent['patent_id']} (Score: {patent['relevance_score']})")
                 print(f"   {patent['title']}")
+                if patent.get('abstract'):
+                    # abstractの最初の200文字を表示（長すぎる場合は省略）
+                    abstract_preview = patent['abstract'][:200] + "..." if len(patent['abstract']) > 200 else patent['abstract']
+                    print(f"   Abstract: {abstract_preview}")
+                print()
         
         if self.results["error_log"]:
             print(f"\nErrors: {len(self.results['error_log'])}")

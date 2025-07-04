@@ -11,6 +11,7 @@ PatentInsight Orchestratorは、Google Patentsの検索結果をCSV形式で受�
 - **バッチ処理機能**: 大量データの分割処理に対応
 - **高速処理モード**: アブストラクト取得をスキップして高速処理
 - **既存ファイルソート**: 既存のスコアリング結果ファイルからソート済みファイルを生成
+- **Abstract統合表示**: 最終結果ファイルにabstract情報を統合し、特許番号からabstractフォルダを探す必要がないように改善
 
 ## システム構成
 
@@ -237,6 +238,7 @@ US-9254383-B2,Devices and methods for monitoring non-invasive vagus nerve stimul
 ### 2. 実行結果サマリー
 - ファイル名: `patent_analyzer/data/processed/orchestrator_results_YYYYMMDD_HHMMSS.json`
 - 形式: JSON（実行統計、エラー情報、上位特許リスト）
+- **新機能**: 上位特許リストにabstract情報を統合（特許番号からabstractフォルダを探す必要なし）
 
 ### 3. ログファイル
 - 分析ログ: `patent_analyzer/logs/orchestrator_YYYY-MM-DD.log`
@@ -319,4 +321,9 @@ python3 patent_analyzer/src/relevance_scorer.py integrated.json
   - PatentInsight Orchestratorシステム実装
   - 4つの主要コンポーネント実装
   - エラーハンドリングとログ機能
-  - 設定可能なキーワードシステム 
+  - 設定可能なキーワードシステム
+- **2025-07-04**: v1.1更新
+  - スコア順ソート機能追加
+  - バッチ処理機能追加
+  - 高速処理モード追加
+  - Abstract統合表示機能追加（最終結果ファイルにabstract情報を統合） 
